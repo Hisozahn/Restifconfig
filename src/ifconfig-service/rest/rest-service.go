@@ -8,35 +8,41 @@ import  (
 	"ifconfig-service/api"
 )
 
-type Response struct {
-	Code int `json:Code`
-	Content interface{} `json:Content`
-}
-
 const addrToListen string = ":55555"
 
-func NewErrorResponse(err api.ApiError) (r Response) {
-	content := map[string]string{"error": err.Info().Message}
-	r = Response{Code: err.Info().Code, Content: content}
+func ApiToHttpCode(apiCode int) int {
+	switch apiCode {
+	case 404:
+		return http.StatusNotFound
+	case 500:
+		return http.StatusInternalServerError
+	case 200:
+		return http.StatusOK
+	default:
+		return http.StatusNotImplemented
+	}
+}
+
+func NewErrorResponse(err api.ApiError) (r interface{}) {
+	r = ErrorMsg{Error: err.Info().Message}
 	return
 }
 
 func GetVersion(w http.ResponseWriter, r *http.Request) {
 	v := api.GetVersion()
-	content := map[string]string{"version": v}
-	msg := Response{Code: 200, Content: content}
+	msg := VersionMsg{Version: v}
 	json.NewEncoder(w).Encode(msg)
 }
 
 func GetInterfaces(w http.ResponseWriter, r *http.Request) {
 	names,err := api.GetInterfaces(mux.Vars(r)["api_version"])
-	var msg Response
+	var msg interface{}
 
 	if err != nil {
 		msg = NewErrorResponse(err)
+		w.WriteHeader(ApiToHttpCode(err.Info().Code))
 	} else {
-		content := map[string][]string{"interfaces": names}
-		msg = Response{Code: 200, Content: content}
+		msg = InterfaceListMsg{Interfaces: names}
 	}
 	json.NewEncoder(w).Encode(msg)
 }
@@ -44,12 +50,13 @@ func GetInterfaces(w http.ResponseWriter, r *http.Request) {
 func GetInterfaceInfo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	info,err := api.GetInterfaceInfo(vars["api_version"], vars["name"])
-	var msg Response
+	var msg interface{}
 
 	if err != nil {
 		msg = NewErrorResponse(err)
+		w.WriteHeader(ApiToHttpCode(err.Info().Code))
 	} else {
-		msg = Response{Code: 200, Content: info}
+		msg = InterfaceInfoMsg{Name: info.Name, HwAddr: info.HwAddr, InetAddrs: info.InetAddrs, MTU: info.MTU}
 	}
 	json.NewEncoder(w).Encode(msg)
 }

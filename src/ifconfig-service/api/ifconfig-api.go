@@ -3,14 +3,12 @@ package api
 import (
 	"net"
 )
-
 type InterfaceInfo struct {
-	Name string `json:"name"`
-	HwAddr string `json:"hw_addr,omitempty"`
-	InetAddrs []string `json:"inet_addr,omitempty"`
-	MTU int `json:"MTU"`
+    Name string
+    HwAddr string
+    InetAddrs []string
+    MTU int
 }
-
 const version string = "v1"
 
 func VersionSupported(v string) (bool) {
