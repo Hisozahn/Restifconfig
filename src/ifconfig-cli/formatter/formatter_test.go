@@ -2,7 +2,7 @@ package formatter
 
 import (
 	"testing"
-	"ifconfig-cli/rest"
+	"ifconfig-service/rest"
 )
 
 func TestPrintInterfaceInfoSuccess(t *testing.T) {
