@@ -2,7 +2,7 @@
 
 Application provides information about network interfaces on server side and sends that information to client side.
 Project consist of two parts
-* ifconfig-service - server listening requests on localhost:55555 (defaulted)
+* ifconfig-service - server listening requests (on localhost:55555 by default)
 * ifconfig-cli - (command line interface) - client application for requesting above-mentioned server
 
 ### Prerequisites
@@ -29,7 +29,7 @@ docker pull hisozahn/ifconfig-cli:latest
 
 Run server:
 
-docker run -d --rm -network=host hisozahn/ifconfig-service
+docker run -d --rm -network=host hisozahn/ifconfig-service 'address to listen'
 
 Run client (list available interfaces on server side)
 
@@ -37,7 +37,7 @@ docker run -it --rm -network=host hisozahn/ifconfig-cli 'your' 'arguments' 'here
 ```
 
 Note -network=host above. If you don't specify network for docker then containers will not be able to communicate with each other.
-Server application will listen localhost:55555 by default.
+Server application accept 1 argument as address to listen to. It will listen localhost:55555 if no arguments are provided.
 Client interface information available by -help flag.
 
 ### Installing
@@ -48,6 +48,7 @@ Prepare go environment variables
 export GOROOT=/usr/lib/go-1.9
 export GOPATH="$HOME"/gopath
 ```
+
 Create directories for sources and imported packages
 
 ```
@@ -72,8 +73,8 @@ Example scenario
 
 ```
 cd "$HOME"/gopath/src/github.com/Hisozahn/Restifconfig/bin
-./service &
-./cli list
+./service 'localhost:11111' &
+./cli --server localhost --port 11111 list
 
 Will show list of available network interfaces on your system
 ```
