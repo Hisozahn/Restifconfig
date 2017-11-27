@@ -5,9 +5,14 @@ go:
  - 1.9
 
 before_install:
- - go get -v github.com/urfave/cli
- - go get -v github.com/gorilla/mux
  - make
 
 script:
  - go test ./...
+
+after_success:
+ - docker build -t "$DOCKER_USERNAME"/ifconfig-cli ifconfig-cli
+ - docker build -t "$DOCKER_USERNAME"/ifconfig-service ifconfig-service
+ - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+ - docker push "$DOCKER_USERNAME"/ifconfig-service
+ - docker push "$DOCKER_USERNAME"/ifconfig-cli
