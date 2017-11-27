@@ -33,10 +33,12 @@ docker run -d --rm -network=host hisozahn/ifconfig-service
 
 Run client (list available interfaces on server side)
 
-docker run -it --rm -network=host hisozahn/ifconfig-cli
+docker run -it --rm -network=host hisozahn/ifconfig-cli 'your' 'arguments' 'here'
 ```
 
 Note -network=host above. If you don't specify network for docker then containers will not be able to communicate with each other.
+Server application will listen localhost:55555 by default.
+Client interface information available by -help flag.
 
 ### Installing
 
