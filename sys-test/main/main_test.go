@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path"
 	"strings"
 	"fmt"
 	"os"
@@ -9,6 +10,10 @@ import (
 )
 
 const (
+	serverFlag = "localhost"
+	portFlag = "1111"
+	addr = serverFlag + ":" + portFlag
+
 	apiError = "API error"
 	incorrectUsage = "Incorrect Usage"
 	usage = "NAME:"
@@ -19,31 +24,31 @@ const (
 
 	cliBinary = "./cli"
 	serverBinary = "./service"
-	binaryPath = "../../bin/"
+	binaryPath = "src/github.com/Hisozahn/Restifconfig/bin/"
 )
 
+var	goPath = os.Getenv("GOPATH")
 
 
 func TestMain(m *testing.M) {
-	err := os.Chdir(binaryPath)
+	err := os.Chdir(path.Join(goPath, binaryPath))
 	if (err != nil) {
 		fmt.Printf("could not change dir: %v", err)
 		os.Exit(1)
 	}
-
-	execServer := exec.Command(serverBinary)
+	execServer := exec.Command(serverBinary, addr)
 	err = execServer.Start()
 	if (err != nil) {
 		fmt.Printf("could not start server: %v", err)
 	}
 
-	m.Run()
+	code := m.Run()
 
 	err = execServer.Process.Kill()
 	if (err != nil) {
 		fmt.Printf("could not terminate server: %v", err)
 	}
-	os.Exit(0)
+	os.Exit(code)
 }
 
 func TestSystem(t *testing.T) {
@@ -64,24 +69,19 @@ func TestSystem(t *testing.T) {
 		{"version with garbage", []string{"--version", "wqew", "uytuytuj", "jhffgd"}, 0, version},
 		{"version with incorrect flag", []string{"--version", "--wqew", "uytuytuj", "jhffgd"}, 0, incorrectUsage},
 		{"list command with incorrect flag", []string{"list", "--wqew", "uytuytuj", "jhffgd"}, 0, incorrectUsage},
-		{"list command", []string{"list"}, 0, ""},
-		{"server flag with list command", []string{"--server", "localhost", "list"}, 0, ""},
-		{"google server flag with list command", []string{"--server", "google.com", "list"}, 1, connectionError},
-		{"valid server and port flags with list command", []string{"--server", "localhost", "--port", "55555", "list"}, 0, ""},
-		{"valid port flag with list command",[]string{"--port", "55555", "list"}, 0, ""},
-		{"missed server flag value with list command",[]string{"--server", "--port", "55555", "list"}, 1, incorrectCommand},
-		{"invalid port value with list command",[]string{"--port", "12312321", "list"}, 1, connectionError},
-		{"wrong port value format with list command",[]string{"--port", "dsadqw", "list"}, 0, incorrectUsage},
-		{"show command", []string{"show","lo"}, 0, ""},
-		{"missed show command argument", []string{"show"}, 1, showWithoutArgument},
-		{"show command with invalid interface", []string{"show","no such interface"}, 1, apiError},
-		{"server flag with show command", []string{"--server", "localhost", "show", "lo"}, 0, ""},
-		{"google server flag with show command", []string{"--server", "google.com", "show", "lo"}, 1, connectionError},
-		{"valid server and port flags with show command", []string{"--server", "localhost", "--port", "55555", "show", "lo"}, 0, ""},
-		{"valid port flag with show command",[]string{"--port", "55555", "show", "lo"}, 0, ""},
-		{"missed server flag value with show command",[]string{"--server", "--port", "55555", "show", "lo"}, 1, incorrectCommand},
-		{"invalid port value with show command",[]string{"--port", "12312321", "show", "lo"}, 1, connectionError},
-		{"wrong port value format with show command",[]string{"--port", "dsadqw", "show", "lo"}, 0, incorrectUsage},
+		{"list command", []string{"--port", portFlag, "--server", serverFlag, "list"}, 0, "lo,"},
+		{"google server flag with list command", []string{"--server", "google.com", "--port", portFlag, "list"}, 1, connectionError},
+		{"valid server and wrong port flags with list command", []string{"--server", serverFlag, "--port", "0", "list"}, 1, connectionError},
+		{"missed server flag value with list command",[]string{"--server", "--port", portFlag, "list"}, 1, incorrectCommand},
+		{"invalid port value with list command",[]string{"--server", serverFlag, "--port", "12312321", "list"}, 1, connectionError},
+		{"wrong port value format with list command",[]string{"--server", serverFlag, "--port", "dsadqw", "list"}, 0, incorrectUsage},
+		{"show command", []string{"--port", portFlag, "--server", serverFlag, "show","lo"}, 0, "lo:"},
+		{"missed show command argument", []string{"--port", portFlag, "--server", serverFlag, "show"}, 1, showWithoutArgument},
+		{"show command with invalid interface", []string{"--port", portFlag, "--server", serverFlag, "show","no such interface"}, 1, apiError},
+		{"google server flag with show command", []string{"--port", portFlag, "--server", "google.com", "show", "lo"}, 1, connectionError},
+		{"missed server flag value with show command",[]string{"--server", "--port", portFlag, "show", "lo"}, 1, incorrectCommand},
+		{"invalid port value with show command",[]string{"--server", serverFlag, "--port", "12312321", "show", "lo"}, 1, connectionError},
+		{"wrong port value format with show command",[]string{"--server", serverFlag, "--port", "dsadqw", "show", "lo"}, 0, incorrectUsage},
 	}
 
 	for _, tt := range tests {
@@ -90,16 +90,16 @@ func TestSystem(t *testing.T) {
 
 			output, err := cmd.CombinedOutput()
 			if (tt.exitCode == 0 && err != nil) {
-				t.Errorf("got: %v, expected 0 exit code", err)
+				t.Fatalf("got: %v, expected 0 exit code", err)
 			}
 			if (tt.exitCode != 0 && err == nil) {
-				t.Error("got nil error, expected non-zero exit code")
+				t.Fatal("got nil error, expected non-zero exit code")
 			}
 
 			actual := string(output)
 
 			if (tt.outputPrefix != "" && !strings.HasPrefix(actual, tt.outputPrefix)) {
-				t.Errorf("got: %s, expected prefix: %s", actual, tt.outputPrefix)
+				t.Fatalf("got: %s, expected prefix: %s", actual, tt.outputPrefix)
 			}
 		})
 	}

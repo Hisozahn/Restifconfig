@@ -1,6 +1,7 @@
 package rest
 
 import  (
+	"os"
 	"encoding/json"
 	"net/http"
 	"log"
@@ -8,7 +9,7 @@ import  (
 	"github.com/Hisozahn/Restifconfig/ifconfig-service/api"
 )
 
-const addrToListen string = ":55555"
+const addrDefault string = ":55555"
 
 func ApiToHttpCode(apiCode int) int {
 	switch apiCode {
@@ -66,5 +67,14 @@ func Listen() {
 	router.HandleFunc("/service/version", GetVersion).Methods("GET")
 	router.HandleFunc("/service/{api_version}/interfaces", GetInterfaces).Methods("GET")
 	router.HandleFunc("/service/{api_version}/interface/{name}", GetInterfaceInfo).Methods("GET")
+
+	var addrToListen string
+
+	if (len(os.Args) > 1) {
+		addrToListen = os.Args[1]
+	} else {
+		addrToListen = addrDefault
+	}
+
 	log.Fatal(http.ListenAndServe(addrToListen, router))
 }

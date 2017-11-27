@@ -72,7 +72,7 @@ Example scenario
 
 ```
 cd "$HOME"/gopath/src/github.com/Hisozahn/Restifconfig/bin
-./server &
+./service &
 ./cli list
 
 Will show list of available network interfaces on your system
