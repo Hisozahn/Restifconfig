@@ -7,6 +7,7 @@ go:
 before_install:
  - go get -v github.com/urfave/cli
  - go get -v github.com/gorilla/mux
+ - make
 
 script:
- - go test ifconfig...
+ - go test ./...
