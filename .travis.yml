@@ -5,9 +5,9 @@ go:
 	- 1.9
 
 before_install:
-	- go get -v github.com/urfave/cli
-	- go get -v github.com/gorilla/mux
+ - go get -v github.com/urfave/cli
+ - go get -v github.com/gorilla/mux
 
 script:
-	- cd src/ifconfig-cli && go test ./...
-	- cd src/ifconfig-service && go test ./...
+ - cd src/ifconfig-cli && go test ./...
+ - cd src/ifconfig-service && go test ./...
